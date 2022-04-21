@@ -1,0 +1,158 @@
+﻿
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit Board</h1>
+<div class="form-group">
+    <label class="col-form-label"> Name: </label><br />
+    <input type="text" id="name" name="name">
+</div>
+
+<div id="editOwner" class="form-group">
+    <label class="col-form-label"> Owner </label><br />
+    <select id="selectOwner" class="form-select" onfocus='this.size=4;'
+            onblur='this.size=1;' onchange='this.size=1;' aria-label="Select account">
+
+        <option selected id="defaultValue"> Select account </option>
+    </select>
+</div>
+<button type="submit" onclick="updateClick()" class="btn btn-outline-primary"> Update </button>
+<a class='btn btn-outline-primary' href='/Board/Index'>Go Back</a>
+<script>
+    var url = window.location.pathname;
+    var id = url.substring(url.lastIndexOf('/') + 1);
+
+    const ownerId = document.getElementById("selectOwner");
+    const name = document.getElementById("name");
+    const defaultSelectionValue = document.getElementById("defaultValue").value;
+    var existingNames = [];
+
+    $(document).ready(function(){
+        getBoardDetails(id);
+        getAccounts();
+        addExistingNames()
+    })
+
+    function addExistingNames() {
+        $.ajax({
+            url: '/api/BoardApi',
+            type: 'GET',
+            dataType: 'json',
+            success: function (board) {
+                addNamesSuccess(board);
+            },
+            error: function () {
+                alert("error");
+            }
+        })
+    }
+
+    function addNamesSuccess(board) {
+        $.each(board, function (index, board) {
+            existingNames.push(board.name);
+        })
+    }
+    var updatedBoard = {
+        owner_id:0,
+        name:"",
+    }
+
+    function getBoardDetails(id) {
+        $.ajax({
+            url: "/api/BoardApi/" + id,
+            type: "Get",
+            datatype: "json",
+            success: function (board) {
+                updateAccount(board);
+            },
+            error: function () {
+                alert("error");
+            }
+        });
+    }
+
+    function updateAccount(board) {
+        $("#name").val(board.name);
+        $("#selectOwner").val(board.owner_id);
+    }
+
+    function getAccounts() {
+        $.ajax({
+            url: "/api/AccountApi/",
+            type: "Get",
+            datatype: "json",
+            success: function (board) {
+                addAccountToList(board);
+            },
+            error: function () {
+                alert("error");
+            }
+        })
+    }
+    function addAccountToList(account) {
+        $.each(account, function (index, account) {
+            addDropDownOptions(account);
+        })
+        function createBoard() {
+            updatedBoard = new Object();
+        }
+    }
+
+    function addDropDownOptions(account) {
+        $('#selectOwner').append(
+            "<option value='" + account.account_id + "'>" +
+            account.first_name + "</option>"
+        );
+    }
+
+    function updateClick() {
+        updatedBoard = new Object();
+        updatedBoard.name = $('#name').val();
+        updatedBoard.owner_id = ownerId.value;
+
+        if (validation(updatedBoard) == true) {
+            updateBoard(updatedBoard);
+        }
+    }
+
+    function validation(board) {
+        if (board.name == "") {
+            name.setCustomValidity("This field is required");
+            name.reportValidity();
+            return false;
+        }
+        if (board.owner_id == -1) {
+            ownerId.setCustomValidity("This field is required");
+            ownerId.reportValidity();
+            return false;
+        }
+        if (board.owner_id == defaultSelectionValue) {
+            ownerId.setCustomValidity("This field is required");
+            ownerId.reportValidity();
+            return false;
+        }
+        if (existingNames.includes(board.name)) {
+            name.setCustomValidity("This name has been used");
+            name.reportValidity();
+            return false;
+        }
+        return true;
+    }
+
+    function updateBoard(updatedBoard) {
+        $.ajax({
+            url: "/api/BoardApi/" + id,
+            type: "Put",
+            data: JSON.stringify(updatedBoard),
+            contentType: "application/json; charset=utf-8",
+            success: function () {
+                alert("The board was updated.");
+            },
+            error: function () {
+                alert("error");
+            }
+        });
+    }
+
+</script>

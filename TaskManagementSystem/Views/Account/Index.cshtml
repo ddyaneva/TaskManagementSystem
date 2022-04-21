@@ -1,0 +1,156 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Accounts</h1>
+@Html.ActionLink("Add", "AddAccount","Account",null, new { @class= "btn btn-outline-primary" })
+<table id="accounts" class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col" style="text-align:left">Id</th>
+            <th scope="col" style="text-align:left">First Name</th>
+            <th scope="col" style="text-align:left">Last Name</th>
+            <th scope="col" style="text-align:left">Email</th>
+            <th scope="col" style="text-align:left">Created</th>
+            <th scope="col" style="text-align:left">Updated</th>
+            <th scope="col" style="text-align:left">Edit</th>
+            <th scope="col" style="text-align:left">Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<script>
+    var projectOwners = [];
+    var boardOwners = [];
+    
+    $(document).ready(function () {
+        accountList();
+        getBoardOwners();
+        getProjectOwners();
+    });
+    function accountList() {
+        $.ajax({
+            url: '/api/AccountApi',
+            type: 'GET',
+            dataType: 'json',
+            success: function (account) {
+                accountsListSuccess(account);
+            },
+            error: function () {
+                alert("error");
+
+            }
+        });
+    }
+    function getBoardOwners() {
+        $.ajax({
+            url: '/api/BoardApi/board/owners',
+            type: 'GET',
+            dataType: 'json',
+            success: function (board) {
+                boardListSuccess(board);
+            },
+            error: function () {
+                alert("error");
+
+            }
+        });
+    }
+    function getProjectOwners() {
+        $.ajax({
+            url: '/api/ProjectApi/project/owners',
+            type: 'GET',
+            dataType: 'json',
+            success: function (project) {
+                projectListSuccess(project);
+            },
+            error: function () {
+                alert("error");
+
+            }
+        });
+    }
+    function boardListSuccess(board) {
+        $.each(board, function (index, board) {
+            boardOwners.push(board.account_id);
+        });
+    }
+
+      function projectListSuccess(project) {
+        $.each(project, function (index, project) {
+            projectOwners.push(project.account_id);
+        });
+    }
+
+    function accountsListSuccess(account) {
+        $.each(account, function (index, account) {
+            accountAddRow(account);
+        });
+    }
+
+    function accountAddRow(account) {
+        $("#accounts").append(
+            accountBuildTableRow(account));
+    }
+
+    function accountBuildTableRow(account) {
+        var row =
+            "<tr>" +
+            "<td>" + account.account_id + "</td>" +
+            "<td>" + account.first_name + "</td>" +
+            "<td>" + account.last_name + "</td>" +
+            "<td>" + account.email + "</td>" +
+            "<td>" + account.created_at.substring(0, 10) +" "+ account.created_at.substring(11, 19)+ "</td>" +
+            "<td>" + account.updated_at.substring(0, 10) + " "+ account.updated_at.substring(11, 19) + "</td>" +
+            "<td> <a href=" + "'Account/edit/" + account.account_id + "' />" + " Edit </a></td>" +
+            "<td>" +
+            "<button type='button' class='btn btn-outline-danger' onclick='deleteAccount(this);'" +
+            " data-id='" + account.account_id + "'>" +
+            "<p>Delete</p>" +
+            "</button>"+
+            "</td>" +
+            "</tr>";
+
+        return row;
+    }
+
+    function deleteAccount(id) {
+        var dataId = $(id).data("id");
+        checkProjectOwners(dataId);
+    }
+    function checkProjectOwners(dataId) {
+        $.ajax({
+            url: '/api/AccountApi/'+dataId,
+            type: 'GET',
+            dataType: 'json',
+            success: function (account) {
+                if (projectOwners.includes(account.account_id) == false &&
+                    boardOwners.includes(account.account_id) == false)
+                    confirmDelete(dataId);
+                else alert("This account is owner of Board or Project and can't be deleted.");
+            },
+            error: function () {
+                alert("error");
+
+            }
+        });
+    }
+ 
+    function confirmDelete(id) {
+        $.ajax({
+            url: "/api/AccountApi/" + id,
+            type: 'DELETE',
+            success: function () {
+                window.location.reload();
+            },
+            error: function () {
+                alert("error");
+            }
+        });
+   }
+</script>
+
+

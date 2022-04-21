@@ -1,0 +1,347 @@
+﻿
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit Task</h1>
+<p> The fields marked with * are required.</p>
+<div class="form-group">
+    <label class="col-form-label"> *Title: </label><br />
+    <input type="text" id="title" name="title">
+</div>
+
+<div id="addProject" class="form-group">
+    <label class="col-form-label"> *Project: </label><br />
+
+    <select id="selectProject" class="form-select" onfocus='this.size=4;'
+            onblur='this.size=1;' onchange='this.size=1;' aria-label="Select project">
+        <option value="-1"> Select project </option>
+    </select>
+</div>
+
+<div id="addBoard" class="form-group">
+    <label class="col-form-label"> *Board: </label><br />
+
+    <select id="selectBoard" class="form-select" onfocus='this.size=4;'
+            onblur='this.size=1;' onchange='this.size=1;' aria-label="Select board">
+        <option selected value="-1"> Select board </option>
+    </select>
+</div>
+
+<div id="addType" class="form-group">
+    <label class="col-form-label"> *Type: </label><br />
+
+    <select id="selectType" class="form-select" onfocus='this.size=5;'
+            onblur='this.size=1;' onchange='this.size=1;' aria-label="Select type">
+
+        <option value="-1"> Select type </option>
+        <option value="0"> Story </option>
+        <option value="1"> Bug </option>
+        <option value="2"> Epic </option>
+        <option value="3"> New Feature </option>
+        <option value="4"> Technical Debt </option>
+    </select>
+</div>
+
+<div id="addPriority" class="form-group">
+    <label class="col-form-label"> Priority: </label><br />
+
+    <select id="selectPriority" class="form-select" onfocus='this.size=4;'
+            onblur='this.size=1;' onchange='this.size=1;' aria-label="Select priority">
+
+        <option value="-1"> Select priority </option>
+        <option value="0"> Low </option>
+        <option value="1"> Medium </option>
+        <option value="2"> High </option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label class="col-form-label"> Description: </label><br />
+    <textarea class="form-control" id="description" rows="3"></textarea>
+</div>
+
+<div id="addReportedBy" class="form-group">
+    <label class="col-form-label"> *Reported By: </label><br />
+
+    <select id="selectReportedBy" class="form-select" onfocus='this.size=4;'
+            onblur='this.size=1;' onchange='this.size=1;' aria-label="Reported By">
+        <option value="-1"> Reported By </option>
+    </select>
+</div>
+
+<div id="addAssignedTo" class="form-group">
+    <label class="col-form-label"> Assigned to: </label><br />
+
+    <select id="selectAssignedTo" class="form-select" onfocus='this.size=4;'
+            onblur='this.size=1;' onchange='this.size=1;' aria-label="Assigned to">
+        <option value="-1"> Assigned to </option>
+    </select>
+</div>
+
+<div id="addStatus" class="form-group">
+    <label class="col-form-label"> Status: </label><br />
+
+    <select id="selectStatus" class="form-select" onfocus='this.size=4;'
+            onblur='this.size=1;' onchange='this.size=1;' aria-label="Select status">
+
+        <option value="-1"> Select status </option>
+        <option value="0"> New </option>
+        <option value="1"> In Development </option>
+        <option value="2"> In QA </option>
+        <option value="3"> Done </option>
+    </select>
+</div>
+
+<div class="form-group">
+    <label class="col-form-label"> Story Points: </label><br />
+    <input type="number" id="storyPoints" name="storyPoints">
+</div>
+
+<button type="submit" onclick="updateClick()" class="btn btn-outline-primary"> Add </button>
+<a class='btn btn-outline-primary' href='/Task/Index'>Go Back</a>
+
+<script>
+    var url = window.location.pathname;
+    var id = url.substring(url.lastIndexOf('/') + 1);
+    $(document).ready(function () {
+        checkIfDisabled();
+        getProjects();
+        getBoards();
+        getTaskData(id);
+        fillAccountField();
+        document.getElementById("selectReportedBy").disabled = false;
+        document.getElementById("selectAssignedTo").disabled = false;
+    })
+    function getTaskData(id) {
+        $.ajax({
+            url: "/api/TaskApi/" + id,
+            type: "Get",
+            datatype: "json",
+            success: function (task) {
+                setTaskData(task);
+            },
+            error: function () {
+                alert("error");
+            }
+        })
+    }
+
+    function setTaskData(task) {
+        $("#title").val(task.title);
+        $('#selectProject')[0].value = task.project_id;
+        $('#selectBoard')[0].value = -1;
+        $('#selectType')[0].value = -1;
+        $('#selectStatus')[0].value = -1;
+        $('#description').val(task.description);
+        $('#selectReportedBy')[0].value = task.reported_by;
+        $('#selectAssignedTo')[0].value = task.assigned_to;
+        $('#selectPriority')[0].value = -1;
+        $('#storyPoints')[0].value = task.story_points;
+    }
+
+    function checkIfDisabled() {
+        if ($("#selectBoard")[0].value == -1 || document.getElementById("selectReportedBy").hasChildNodes() == false) {
+            document.getElementById("selectReportedBy").disabled = true;
+        }
+
+        if ($("#selectBoard")[0].value == -1 || document.getElementById("selectAssignedTo").hasChildNodes() == false) {
+            document.getElementById("selectAssignedTo").disabled = true;
+        }
+    }
+    function getProjects() {
+        $.ajax({
+            url: "/api/ProjectApi/",
+            data: "json",
+            type: "Get",
+            success: function (projects) {
+                fillProjects(projects);
+            },
+            error: function () {
+                alert("error");
+            }
+        })
+    }
+    function fillProjects(projects) {
+        $.each(projects, function (index, projects) {
+            addDropProjectsOptions(projects);
+        })
+    }
+
+    function addDropProjectsOptions(projects) {
+        $('#selectProject').append(
+            "<option value='" + projects.project_id + "'>" +
+            projects.title + "</option>"
+        );
+    }
+
+    function getBoards() {
+        $.ajax({
+            url: "/api/BoardApi/",
+            data: "json",
+            type: "Get",
+            success: function (boards) {
+                fillBoards(boards);
+            },
+            error: function () {
+                alert("error");
+            }
+        })
+    }
+    function fillBoards(boards) {
+        $.each(boards, function (index, boards) {
+            addDropBoardsOptions(boards);
+        })
+    }
+
+    function addDropBoardsOptions(boards) {
+        $('#selectBoard').append(
+            "<option value='" + boards.board_id + "'>" +
+            boards.name + "</option>"
+        );
+    }
+    function getAccounts(id) {
+        $.ajax({
+            url: "/api/BoardMemberApi/"+id,
+            type: "get",
+            data: "json",
+            success: function (accounts) {
+                clearField();
+                fillAccounts(accounts);
+                document.getElementById("selectReportedBy").disabled = false;
+                document.getElementById("selectAssignedTo").disabled = false;
+            },
+            error: function () {
+                document.getElementById("selectReportedBy").disabled = true;
+                document.getElementById("selectAssignedTo").disabled = true;
+            }
+        })
+    }
+
+    function fillAccounts(accounts) {
+        $.each(accounts, function (index, accounts) {
+            addDropAccountOptions(accounts);
+        })
+    }
+    function clearField() {
+        $('#selectReportedBy').children("option").remove();
+        $('#selectAssignedTo').children("option").remove();
+    }
+
+    function addDropAccountOptions(accounts) {
+        $('#selectReportedBy').append(
+            "<option value='" + accounts.account_id + "'>" +
+            accounts.first_name + " " + accounts.last_name + "</option>"
+        );
+        $('#selectAssignedTo').append(
+            "<option value='" + accounts.account_id + "'>" +
+            accounts.first_name + " " + accounts.last_name + "</option>"
+        );
+    }
+    function fillAccountField() {
+        $('#addBoard').on('change', function () {
+            var accountId = $('#selectBoard')[0].value;
+            getAccounts(accountId);
+            checkIfDisabled();
+        });
+    }
+
+    function updateClick() {
+
+        newTask = {
+            title: "",
+            project_id: -1,
+            board_id: -1,
+            description: 0,
+            reported_by: 0,
+            assigned_to: null,
+            story_points: null,
+            type: 0,
+            status: 0,
+            priority: 0
+        };
+
+        newTask.title = $("#title").val();
+        newTask.project_id = $('#selectProject')[0].value;
+        newTask.board_id = $('#selectBoard')[0].value;
+        newTask.type = $('#selectType')[0].value;
+
+        newTask.status = $('#selectStatus')[0].value;
+        if (newTask.status == -1)
+            newTask.status = 0;
+
+        newTask.description = $('#description').val();
+        newTask.reported_by = $('#selectReportedBy')[0].value;
+
+        newTask.assigned_to = null//$('#selectAssignedTo')[0].value;
+  //      if (newTask.assigned_to == -1)
+ //           newTask.assigned_to = null;
+
+        newTask.priority = $('#selectPriority')[0].value;
+        if (newTask.priority == -1)
+            newTask.priority = 0;
+
+        newTask.story_points = null // $('#storyPoints')[0].value;
+
+        if (validationTask(newTask)==true)
+            addTask(newTask);
+
+    }
+    function validationTask(model) {
+        if (model.title == "") {
+            $("#title")[0].setCustomValidity("This field is required");
+            $("#title")[0].reportValidity();
+            return false;
+        }
+        if (model.project_id == null || model.project_id == -1) {
+            $('#selectProject')[0].setCustomValidity("This field is required");
+            $('#selectProject')[0].reportValidity();
+            return false;
+        }
+        if (model.board_id == null || model.board_id == -1) {
+            $('#selectBoard')[0].setCustomValidity("This field is required");
+            $('#selectBoard')[0].reportValidity();
+            return false;
+        }
+        if (model.reported_by == null || model.reported_by == -1) {
+            $('#selectReportedBy')[0].setCustomValidity("This field is required");
+            $('#selectReportedBy')[0].reportValidity();
+            return false;
+        }
+        if (model.selectType == null | model.selectType == -1) {
+            $('#selectType')[0].setCustomValidity("This field is required");
+            $('#selectType')[0].reportValidity();
+            //return false;
+        }
+        return true;
+    }
+
+    function addTask(model) {
+        $.ajax({
+            url: '/api/TaskApi/'+id,
+            type: 'Put',
+            contentType:
+                "application/json;charset=utf-8",
+            data: JSON.stringify(model),
+            success: function () {
+                alert("The task was added");
+                clearForm();
+            },
+            error: function () {
+                alert("error");
+            }
+        });
+    }
+    function clearForm() {
+        $('#description').val("");
+        $("#title").val("");
+        $('#selectProject')[0].value = -1;
+        $('#selectBoard')[0].value = -1;
+        $('#selectType')[0].value = -1;
+        $('#selectStatus')[0].value = -1;
+        $('#selectReportedBy')[0].value = -1;
+        $('#selectAssignedTo')[0].value = -1;
+        $('#selectPriority')[0].value = -1;
+        $('#storyPoints')[0].value = 0;
+    }
+</script>

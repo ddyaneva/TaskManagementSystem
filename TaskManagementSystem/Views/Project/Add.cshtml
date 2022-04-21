@@ -1,0 +1,150 @@
+﻿
+@{
+    ViewData["Title"] = "Add";
+}
+
+<h1>Add Project</h1>
+
+<div class="form-group">
+    <label class="col-form-label"> Key: </label><br />
+    <input type="text" id="key" name="key">
+</div>
+<div class="form-group">
+    <label class="col-form-label"> Title: </label><br />
+    <input type="text" id="title" name="title">
+</div>
+<div id="addOwner" class="form-group">
+    <label class="col-form-label"> Owner </label><br />
+    <select id="selectOwner" class="form-select" onfocus='this.size=4;' onblur='this.size=1;' onchange='this.size=1;' aria-label="Select account">
+        <option selected id="defaultValue"> Select account </option>
+    </select>
+</div>
+<button type="submit" onclick="updateClick()" class="btn btn-outline-primary"> Add </button>
+<a class='btn btn-outline-primary' href='/Project/Index'>Go Back</a>
+
+<script>
+    const ownerId = document.getElementById("selectOwner");
+    const key = document.getElementById("key");
+    const title = document.getElementById("title");
+    const defaultSelectionValue = document.getElementById("defaultValue").value;
+    var existingKeys = [];
+
+    $(document).ready(function () {
+        getAccounts();
+        addExistingKeys();
+    });
+
+    function addExistingKeys() {
+        $.ajax({
+            url: '/api/ProjectApi',
+            type: 'GET',
+            dataType: 'json',
+            success: function (project) {
+                addKeysSuccess(project);
+            },
+            error: function () {
+                alert("error");
+            }
+        })
+    }
+
+    function addKeysSuccess(project) {
+        $.each(project, function (index, project) {
+            existingKeys.push(project.key);
+        })
+    }
+
+
+    function getAccounts() {
+        $.ajax({
+            url: '/api/AccountApi',
+            type: 'GET',
+            dataType: 'json',
+            success: function (account) {
+                addAccountToList(account);
+            },
+            error: function () {
+                alert("Error");;
+            }
+        });
+    }
+    function addProject(project) {
+        $.ajax({
+            url: '/api/ProjectApi',
+            type: 'POST',
+            contentType:
+                "application/json;charset=utf-8",
+            data: JSON.stringify(project),
+            success: function () {
+                clearForm();
+                alert("The project was added");
+            },
+            error: function () {
+                alert("error");
+
+            }
+        });
+    }
+
+
+    function addAccountToList(account) {
+        $.each(account, function (index, account) {
+            addDropDownOptions(account);
+        })
+    }
+
+    function addDropDownOptions(account) {
+        $('#selectOwner').append(
+            "<option value='" + account.account_id + "'>" +
+            account.first_name + "</option>"
+        );
+    }
+    var project = {
+        key: "",
+        title: "",
+        owner_id: -1,
+    }
+    function clearForm() {
+        $("#key").val("");
+        $("#title").val("");
+        $("#selectOwner").val(defaultSelectionValue);
+    }
+
+    function updateClick() {
+        project = new Object();
+        project.key = $('#key').val();
+        project.title = $('#title').val();
+        project.owner_id = ownerId.value;
+
+        if (validation() == true) {
+            addProject(project);
+        }
+    }
+
+    function validation() {
+        if (project.title == "") {
+            title.setCustomValidity("This field is required");
+            title.reportValidity();
+            return false;
+        }
+        if (project.key == "") {
+            key.setCustomValidity("This field is required");
+            key.reportValidity();
+            return false;
+        }
+        if (project.owner_id == -1 || project.owner_id == defaultSelectionValue) {
+            ownerId.setCustomValidity("This field is required");
+            ownerId.reportValidity();
+            return false;
+        }
+        if (existingKeys.includes(project.key)) {
+            key.setCustomValidity("This key has been used");
+            key.reportValidity();
+            return false;
+        }
+        return true;
+    }
+
+
+</script>
+

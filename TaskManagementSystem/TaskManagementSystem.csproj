@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Migrations\20220414223846_UpdateDatabase.cs" />
+    <Compile Remove="Migrations\20220414223846_UpdateDatabase.Designer.cs" />
+    <Compile Remove="Migrations\20220414224046_InitialModel.cs" />
+    <Compile Remove="Migrations\20220414224046_InitialModel.Designer.cs" />
+    <Compile Remove="Migrations\20220420145851_AddPrimaryKeyToBoardMemberTable.cs" />
+    <Compile Remove="Migrations\20220420145851_AddPrimaryKeyToBoardMemberTable.Designer.cs" />
+    <Compile Remove="Migrations\20220420150027_AddPrimaryKeyToBoardMemberTable.cs" />
+    <Compile Remove="Migrations\20220420150027_AddPrimaryKeyToBoardMemberTable.Designer.cs" />
+    <Compile Remove="Migrations\20220420150430_update.cs" />
+    <Compile Remove="Migrations\20220420150430_update.Designer.cs" />
+    <Compile Remove="Migrations\20220420151812_Update.cs" />
+    <Compile Remove="Migrations\20220420151812_Update.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="automapper" Version="11.0.1" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
+    <PackageReference Include="jQuery.UI" Version="1.12.1.1" />
+    <PackageReference Include="microsoft.data.sqlite.core" Version="3.1.0" />
+    <PackageReference Include="microsoft.entityframeworkcore" Version="3.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.5" />
+  </ItemGroup>
+
+</Project>

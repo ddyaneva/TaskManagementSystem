@@ -1,0 +1,149 @@
+﻿
+@{
+    ViewData["Title"] = "Add";
+}
+
+<h1>Add Board</h1>
+
+<div class="form-group">
+    <label class="col-form-label"> Name: </label><br />
+    <input type="text" id="name" name="name">
+</div>
+<div id="addOwner" class="form-group">
+    <label class="col-form-label"> Owner </label><br />
+    <select id="selectOwner" class="form-select" onfocus='this.size=4;' onblur='this.size=1;' onchange='this.size=1;' aria-label="Select account">
+        <option selected id="defaultValue"> Select account </option>
+    </select>
+</div>
+<button type="submit" onclick="updateClick()" class="btn btn-outline-primary" > Add </button>
+<a class='btn btn-outline-primary' href='/Board/Index'>Go Back</a>
+<script>
+    const ownerId = document.getElementById("selectOwner");
+    const name = document.getElementById("name");
+    const defaultSelectionValue = document.getElementById("defaultValue").value;
+
+    var existingNames = [];
+
+    $(document).ready(function () {
+        getAccounts();
+        addExistingNames();
+    });
+
+    function addExistingNames() {
+        $.ajax({
+            url: '/api/BoardApi',
+            type: 'GET',
+            dataType: 'json',
+            success: function (board) {
+                addNamesSuccess(board);
+            },
+            error: function () {
+                alert("error");
+            }
+        })
+    }
+
+    function addNamesSuccess(board) {
+        $.each(board, function (index, board) {
+            existingNames.push(board.name);
+        })
+    }
+
+    var board = {
+        name: "",
+        owner_id: -1,
+    }
+
+    var boardMember = {
+        account_id: 0,
+        board_id: 0
+    }
+
+    function getAccounts() {
+        $.ajax({
+            url: '/api/AccountApi',
+            type: 'GET',
+            dataType: 'json',
+            success: function (account) {
+                addAccountToList(account);
+            },
+            error: function () {
+                alert("Error");;
+            }
+        });
+    }
+
+    function addAccountToList(account) {
+        $.each(account, function (index, account) {
+            addDropDownOptions(account);
+        })
+    }
+
+    function addDropDownOptions(account) {
+        $('#selectOwner').append(
+            "<option value='" + account.account_id + "'>" +
+            account.first_name + "</option>"
+        );
+    }
+      
+    function updateClick() {
+        board = new Object();
+        board.name = $('#name').val();
+
+        board.owner_id = ownerId.value;
+
+        if (validation() == true) {
+            addBoard(board);
+        }
+    }
+
+    function validation() {
+        if (board.name == "") {
+            name.setCustomValidity("This field is required");
+            name.reportValidity();
+            return false;
+        }
+        if (board.owner_id == -1) {
+            ownerId.setCustomValidity("This field is required");
+            ownerId.reportValidity();
+            return false;
+        }
+        if (board.owner_id == defaultSelectionValue) {
+            ownerId.setCustomValidity("This field is required");
+            ownerId.reportValidity();
+            return false;
+        }
+        if (existingNames.includes(board.name)) {
+            name.setCustomValidity("This name has been used");
+            name.reportValidity();
+            return false;
+        }
+        return true;
+    }
+
+    function addBoard(board) {
+        $.ajax({
+            url: '/api/BoardApi',
+            type: 'POST',
+            contentType:
+                "application/json;charset=utf-8",
+            data: JSON.stringify(board),
+            success: function (board) {
+                clearForm();
+                alert("The Board was created.");
+            },
+            error: function () {
+                alert("error");
+
+            }
+        });
+    }
+
+    function clearForm() {
+        $("#name").val("");
+        $("#selectOwner").val(defaultSelectionValue);
+    }
+
+
+</script>
+

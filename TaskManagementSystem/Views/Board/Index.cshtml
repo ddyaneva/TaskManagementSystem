@@ -1,0 +1,105 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Board</h1>
+@Html.ActionLink("Add","Add","Board",null,new { @class= "btn btn-outline-primary" })
+<table id="board"  class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col" style="text-align:left"> Id</th>
+            <th scope="col" style="text-align:left"> Name</th>
+            <th scope="col" style="text-align:left"> Owner</th>
+            <th scope="col" style="text-align:left"> Created</th>
+            <th scope="col" style="text-align:left"> Updated</th>
+            <th scope="col" style="text-align:left"> Edit</th>
+            <th scope="col" style="text-align:left"> Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<script>
+    $(document).ready(function () {
+        getAccounts();
+    });
+
+    function getAccounts() {
+        $.ajax({
+            url: "/api/BoardApi/",
+            type: "GET",
+            dataType: "json",
+            success: function (board) {
+                addRowSuccess(board)
+            },
+            error: function() {
+                alert("error");
+            }
+        })
+    }
+    function deleteAccount(id) {
+        var dataId = $(id).data("id");
+        confirmDelete(id, dataId);
+    }
+
+    function confirmDelete(id, dataId) {
+        $.ajax({
+            url: "/api/BoardApi/" + dataId,
+            type: 'DELETE',
+            success: function () {
+                $(id).parents("tr").remove();
+            },
+            error: function () {
+                alert("error");
+
+            }
+        });
+    }
+
+    function addRowSuccess(board) {
+        $.each(board,function(index,board){
+            createRow(board);
+        })
+    }
+
+    function createRow(board) {
+        $("#board").append(
+            "<tr>" +
+                "<td>" + board.board_id + "</td>" +
+            "<td>" + board.name + "</td>" +
+            "<td><p id='owner-" + board.owner_id + "'>" + getBoardOwnerData(board.owner_id) + "</p> </td>" +
+                "<td>" + board.created_at + "</td>" +
+                "<td>" + board.updated_at + "</td>" +
+                "<td><a href='/board/edit/" + board.board_id + "'> Edit </a> </td>" +
+                "<td>" +
+                 "<button type='button' class='btn btn-outline-danger' onclick='deleteAccount(this);'" +
+                 " data-id='" + board.board_id + "'>" +
+                 "<p>Delete</p>" +
+                 "</button>" +
+                 "</td>" +
+                 "<tr>"
+      )
+    }
+    function getBoardOwnerData(id) {
+        $.ajax({
+            url: '/api/AccountApi/' + id,
+            type: 'GET',
+            dataType: 'json',
+            success: function (account) {
+                updateAccountData(account);
+            },
+            error: function () {
+                alert("error");
+
+            }
+        },)
+    }
+    function updateAccountData(account) {
+        var accountData = account.first_name + "</br>" + account.last_name;
+        var id = "owner-" + account.account_id;
+        var element = document.getElementById(id);
+        element.innerHTML = accountData;
+    }
+
+</script>

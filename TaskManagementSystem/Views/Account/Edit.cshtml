@@ -1,0 +1,137 @@
+﻿@{
+    ViewData["Title"] = "Edit";
+}
+<h1>Edit Accounts</h1>
+
+<div class="form-group">
+    <label class="col-form-label"> First Name: </label><br />
+    <input type="text" id="fname" name="fname">
+</div>
+<div class="form-group">
+    <label class="col-form-label"> Last Name: </label><br />
+    <input type="text" id="lname" name="lname">
+</div>
+<div class="form-group">
+    <label class="col-form-label"> Email: </label><br />
+    <input type="text" id="email" name="email">
+</div>
+<button onclick="updateClick()" type="submit" class="btn btn-outline-success"> Save </button>
+<a class="btn btn-outline-success" asp-area="" asp-controller="Account" asp-action="Index">Go Back</a>
+
+<script>
+    var url = window.location.pathname;
+    var id = url.substring(url.lastIndexOf('/') + 1);
+    var updatedAccount = {
+        first_name: 0,
+        last_name: "",
+        email: "",
+    }
+    $(document).ready(function () {
+        editAccount(id);
+    });
+
+    function editAccount(id) {
+        $.ajax({
+            url: '/api/AccountApi/'+id,
+            type: 'GET',
+            dataType: 'json',
+            success: function (account) {
+                getAccountData(account);
+            },
+            error: function () {
+                alert("error");
+            }
+        });
+    }
+
+    function getAccountData(account) {
+        $('#fname').val(account.first_name);
+        $('#lname').val(account.last_name);
+        $('#email').val(account.email);
+        updatedAccount = new Object();
+        updatedAccount.first_name = account.first_name;
+        updatedAccount.last_name = account.last_name;
+        updatedAccount.email = account.email;
+    }
+    function updateClick() {
+        accountUpdateSuccess(updatedAccount)
+    }
+    function updateAccount(account){
+            $.ajax({
+                url: '/api/AccountApi/' + id,
+                type: 'PUT',
+                contentType: "application/json;charset=utf-8",
+                data: JSON.stringify(account),
+                success: function () {
+                    alert("The account was changed in the database")
+                },
+                error: function () {
+                    alert("error");
+                }
+            });
+    }
+    
+
+    function accountUpdateSuccess(account) {
+        account.first_name = $('#fname').val();
+        account.last_name = $('#lname').val();
+        account.email = $('#email').val();
+        if (validate() == true) {
+            updateAccount(account);
+        }
+    }
+    function handleException(request, message, error) {
+        var msg = "Error";
+        alert(msg);
+    }
+    var existingEmails = [];
+
+    function addExistingEmails() {
+        $.ajax({
+            url: '/api/AccountApi',
+            type: 'GET',
+            dataType: 'json',
+            success: function (emails) {
+                addEmailsSuccess(emails);
+            },
+           error: function () {
+                    alert("error");
+                
+            }
+        })
+    }
+
+    function addEmailsSuccess(emails) {
+        $.each(emails, function () {
+            existingEmails.push(emails.email);
+        })
+    }
+    const fname = document.getElementById("fname");
+    const lname = document.getElementById("lname");
+    const email = document.getElementById("email");
+
+    function validate() {
+        if (updatedAccount.first_name == "") {
+            fname.setCustomValidity("This field is required");
+            fname.reportValidity();
+            return false;
+        }
+        if (updatedAccount.last_name == "") {
+            lname.setCustomValidity("This field is required");
+            lname.reportValidity();
+            return false
+        }
+        if (updatedAccount.email == "") {
+            email.setCustomValidity("This field is required");
+            email.reportValidity();
+            return false;
+        }
+        if (existingEmails.includes(updatedAccount.email)) {
+            email.setCustomValidity("This email has been used");
+            email.reportValidity();
+            return false;
+        }
+        return (true);
+    }
+
+</script>

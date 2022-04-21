@@ -1,0 +1,212 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Tasks</h1>
+
+
+<div class="form-group">
+    <label class="col-form-label"> Title: </label><br />
+    <input type="text" id="title-search" name="name">
+</div>
+
+<div id="addType" class="form-group">
+    <label class="col-form-label"> *Type: </label><br />
+
+    <select id="selectType-search" class="form-select" onfocus='this.size=5;'
+            onblur='this.size=1;' onchange='this.size=1;' aria-label="Select type">
+
+        <option value="-1"> Select type </option>
+        <option value="0"> Story </option>
+        <option value="1"> Bug </option>
+        <option value="2"> Epic </option>
+        <option value="3"> New Feature </option>
+        <option value="4"> Technical Debt </option>
+    </select>
+</div>
+
+<div id="addAssignedTo" class="form-group">
+    <label class="col-form-label"> Assigned to: </label><br />
+
+    <select id="addAssignedTo-search" class="form-select" onfocus='this.size=4;'
+            onblur='this.size=1;' onchange='this.size=1;' aria-label="Assigned to">
+        <option value="-1"> Assigned to </option>
+    </select>
+</div>
+
+<button type="submit" onclick="search()" class="btn btn-outline-primary"> Search </button>
+@Html.ActionLink("Add", "Add", "Task", null, new { @class = "btn btn-outline-primary" })
+<table id="tasks" class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col" style="text-align:left"> Id</th>
+            <th scope="col" style="text-align:left"> Title</th>
+            <th scope="col" style="text-align:left"> Project Id</th>
+            <th scope="col" style="text-align:left"> Board Id</th>
+            <th scope="col" style="text-align:left"> Type</th>
+            <th scope="col" style="text-align:left"> Status</th>
+            <th scope="col" style="text-align:left"> Description</th>
+            <th scope="col" style="text-align:left"> Reported By</th>
+            <th scope="col" style="text-align:left"> Assigned To</th>
+            <th scope="col" style="text-align:left"> Priority</th>
+            <th scope="col" style="text-align:left"> Story Points</th>
+            <th scope="col" style="text-align:left"> Edit</th>
+            <th scope="col" style="text-align:left"> Delete</th>
+        </tr>
+    </thead>
+    <tbody id="tableBody">
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function () {
+        getTasks();
+        getAccounts();
+    })
+    searchModel = {
+        title : "",
+        type : "",
+        assined_to : ""
+    }
+    function search() {
+        clearTable();
+         searchModel.title = $("#title-search").val();
+
+        if ($('#selectType-search')[0].value>=0)
+            searchModel.type = $('#selectType-search')[0].value;
+
+        if ($('#addAssignedTo-search')[0].value >= 0)
+            searchModel.assigned_to = $('#addAssignedTo-search')[0].value;
+        else searchModel.assigned_to = "";
+
+           searchTask(searchModel);
+    }
+
+    function searchTask(searchModel) {
+        $.ajax({
+            url: "/api/taskApi/search/",
+            type: "Post",
+            contentType:
+                "application/json;charset=utf-8",
+            data: JSON.stringify(searchModel),
+            success: function (tasks) {
+                fillTaskTable(tasks);
+                $('#selectType-search')[0].value = -1;
+                $("#title-search").val("");
+                $('#addAssignedTo-search')[0].value = -1;
+                searchModel.assigned_to = "";
+                searchModel.type = "";
+                searchModel.title = "";
+
+            },
+            error: function () {
+                alert("error");
+            }
+        })
+    }
+    function clearTable() {
+        $('#tableBody').children("tr").remove();
+        $('#tableBody').children("td").remove();
+    }
+    function fillTaskTable(tasks) {
+        $.each(tasks, function (index, tasks) {
+            addRow(tasks);
+        })
+    }
+
+  
+    function getAccounts() {
+        $.ajax({
+            url: "/api/AccountApi/",
+            data: "json",
+            type: "Get",
+            success: function (accounts) {
+                fillAccounts(accounts);
+            },
+            error: function () {
+                alert("error");
+            }
+        })
+    }
+    function fillAccounts(accounts) {
+        $.each(accounts, function (index, accounts) {
+            addDropProjectsOptions(accounts);
+        })
+    }
+
+    function addDropProjectsOptions(accounts) {
+        $('#selectAssignedTo').append(
+            "<option value='" + accounts.accounts_id + "'>" +
+            accounts.first_name + " " + accounts.last_name + "</option>"
+        );
+        $('#addAssignedTo-search').append(
+            "<option value='" + accounts.accounts_id + "'>" +
+            accounts.first_name + " " + accounts.last_name + "</option>"
+        );
+    }
+
+    function getTasks() {
+        $.ajax({
+            url: "/api/taskapi",
+            type: "get",
+            datatype: "json",
+            success: function (tasks) {
+                getTasksSuccess(tasks);
+            },
+            error: function () {
+                alert("error");
+            }
+        });
+    }
+
+    function getTasksSuccess(tasks) {
+        $.each(tasks, function (index, tasks) {
+            addRow(tasks);
+        })
+    }
+
+    function addRow(tasks) {
+        $("#tasks").append(
+            "<tr>" +
+            "<td>" + tasks.task_id + "</td>" +
+            "<td>" + tasks.title + "</td>" +
+            "<td>" + tasks.project_id + "</td>" +
+            "<td>" + tasks.board_id + "</td>" +
+            "<td>" + tasks.type + "</td>" +
+            "<td>" + tasks.status + "</td>" +
+            "<td>" + tasks.description + "</td>" +
+            "<td>" + tasks.reported_by + "</td>" +
+            "<td>" + tasks.assigned_to + "</td>" +
+            "<td>" + tasks.priority + "</td>" +
+            "<td>" + tasks.story_points + "</td>" +
+            "<td><a href='/task/edit/" + tasks.task_id + "'> Edit </a> </td>" +
+            "<td>" +
+            "<button type='button' class='btn btn-outline-danger' onclick='deleteProject(this);'" +
+            " data-id='" + tasks.task_id + "'>" +
+            "<p>Delete</p>" +
+            "</button>" +
+            "</td>" +
+            "<tr>"
+        )
+    }
+
+    function deleteProject(id) {
+        var dataId = $(id).data("id");
+        confirmDelete(id, dataId);
+    }
+
+    function confirmDelete(id, dataId) {
+        $.ajax({
+            url: "/api/TaskApi/" + dataId,
+            type: 'DELETE',
+            success: function () {
+                $(id).parents("tr").remove();
+            },
+            error: function () {
+                alert("error");
+            }
+        });
+    }
+
+</script>

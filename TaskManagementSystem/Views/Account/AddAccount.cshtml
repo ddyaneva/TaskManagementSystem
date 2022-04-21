@@ -1,0 +1,112 @@
+﻿@model TaskManagementSystem.Models.Account
+@{
+    ViewData["Title"] = "Add Account";
+}
+
+<h1>Add Actors</h1>
+
+<div class="form-group">
+    <label class="col-form-label"> First Name: </label><br />
+    <input type="text" id="fname" name="fname">
+</div>
+<div class="form-group">
+    <label class="col-form-label"> Last Name: </label><br />
+    <input type="text" id="lname" name="lname">
+</div>
+<div class="form-group">
+    <label class="col-form-label"> Email: </label><br />
+    <input type="text" id="email" name="email">
+</div>
+<button id="submitButton" onclick="updateClick()" type="submit" class="btn btn-outline-success"> Add </button>
+<a class="btn btn-outline-primary" href="/Account/Index">Go Back</a>
+<script>
+    var existingEmails = [];
+
+    $(document).ready(function () {
+        addExistingEmails();
+    })
+    function addExistingEmails() {
+        $.ajax({
+            url: '/api/AccountApi',
+            type: 'GET',
+            dataType: 'json',
+            success: function (emails) {
+                addEmailsSuccess(emails);
+            }
+        })
+    }
+
+    function addEmailsSuccess(emails) {
+        $.each(emails, function (index,emails) {
+            existingEmails.push(emails.email);
+        })
+    }
+
+
+    var account = {
+        first_name: 0,
+        last_name: "",
+        email: "",
+    }
+
+    const fname = document.getElementById("fname");
+    const lname = document.getElementById("lname");
+    const email = document.getElementById("email");
+
+    function updateClick() {
+        account = new Object();
+        account.first_name = $('#fname').val();
+        account.last_name = $('#lname').val();
+        account.email = $('#email').val();
+        if (validate() == true) {
+            addAccount(account);
+        }
+    }
+
+    function addAccount(account) {
+        $.ajax({
+            url: "/api/AccountApi",
+            type: 'POST',
+            contentType:
+                "application/json;charset=utf-8",
+            data: JSON.stringify(account),
+            success: function () {
+                formClear();
+                alert("The account was added successfully to the database");
+            },
+            error: function () {
+                alert("error");
+            }
+        });
+    }
+    function formClear() {
+        $('#fname').val("");
+        $('#lname').val("");
+        $('#email').val("");
+    }
+
+    function validate() {
+        if (account.first_name == "") {
+            fname.setCustomValidity("This field is required");
+            fname.reportValidity();
+            return false;
+        }
+        if (account.last_name == "") {
+            lname.setCustomValidity("This field is required");
+            lname.reportValidity();
+            return false
+        }
+        if (account.email == "") {
+            email.setCustomValidity("This field is required");
+            email.reportValidity();
+            return false;
+        }
+        if (existingEmails.includes(account.email)) {
+            email.setCustomValidity("This email has been used");
+            email.reportValidity();
+            return false;
+        }
+        return true;
+    }
+
+</script>

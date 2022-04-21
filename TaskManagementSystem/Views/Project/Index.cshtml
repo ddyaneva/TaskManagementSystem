@@ -1,0 +1,110 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Project</h1>
+@Html.ActionLink("Add","Add","Project",null,new { @class= "btn btn-outline-primary" })
+<table id="project"  class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col" style="text-align:left"> Id</th>
+            <th scope="col" style="text-align:left"> Key</th>
+            <th scope="col" style="text-align:left"> Title</th>
+            <th scope="col" style="text-align:left"> Owner</th>
+            <th scope="col" style="text-align:left"> Task Size:</th>
+            <th scope="col" style="text-align:left"> Edit</th>
+            <th scope="col" style="text-align:left"> Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<script>
+    $(document).ready(function () {
+        getProjects();
+    });
+
+    function getProjects() {
+        $.ajax({
+            url: "/api/ProjectApi/",
+            type: "GET",
+            dataType: "json",
+            success: function (project) {
+                addRowSuccess(project);   
+            },
+            error: function() {
+                alert("error");
+            }
+        })
+    }
+
+    function getTaskSize(projects) {
+        $.ajax({
+            url: "/api/TaskApi/project/tasks/" + projects.project_id,
+            type: "GET",
+            dataType: "json",
+            success: function (projects) {
+                var projectId = projects.project_id;
+                updateTaskSize(projects, projectId);
+            },
+            error: function () {
+            }
+        })
+    }
+     function deleteProject(id) {
+        var dataId = $(id).data("id");
+        confirmDelete(id, dataId);
+    }
+
+    function confirmDelete(id, dataId) {
+        $.ajax({
+            url: "/api/ProjectApi/" + dataId,
+            type: 'DELETE',
+            success: function () {
+                $(id).parents("tr").remove();
+            },
+            error: function (request, message, error) {
+                handleException(request, message, error);
+            }
+        });
+    }
+
+    function addRowSuccess(project) {
+        $.each(project, function (index, project){
+            createRow(project);
+        })
+    }
+
+    function createRow(project) {
+
+        $("#project").append(
+            "<tr>" +
+            "<td>" + project.project_id + "</td>" +
+            "<td>" + project.key + "</td>" +
+            "<td>" + project.title + "</td>" +
+            "<td>" + project.owner_id + "</td>" +
+            "<td><p id='task-" + project.project_id + "'>" + updateTaskData(project) + "</p> </td>" +
+             "<td><a href='/project/edit/" + project.project_id + "'> Edit </a> </td>" +
+            "<td>" +
+             "<button type='button' class='btn btn-outline-danger' onclick='deleteProject(this);'" +
+            " data-id='" + project.project_id + "'>" +
+             "<p>Delete</p>" +
+                 "</button>" +
+                 "</td>" +
+                 "<tr>"
+      )
+    }
+
+    function updateTaskData(projects){
+        getTaskSize(projects);
+    }
+
+    function updateTaskSize(project, projectId) {
+        var taskSize = Object.keys(project).length;
+        var id = "task-" + projectId;
+        var element = document.getElementById(id);
+        element.innerHTML = taskSize;
+    }
+
+</script>

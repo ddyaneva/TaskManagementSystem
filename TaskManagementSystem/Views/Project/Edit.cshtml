@@ -1,0 +1,172 @@
+﻿
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit Project</h1>
+<div class="form-group">
+    <label class="col-form-label"> Key: </label><br />
+    <input type="text" id="key" name="key">
+</div>
+<div class="form-group">
+    <label class="col-form-label"> Title: </label><br />
+    <input type="text" id="title" name="title">
+</div>
+<div id="editOwner" class="form-group">
+    <label class="col-form-label"> Owner </label><br />
+    <select id="selectOwner" class="form-select" onfocus='this.size=4;'
+            onblur='this.size=1;' onchange='this.size=1;' aria-label="Select account">
+
+        <option selected id="defaultValue"> Select account </option>
+    </select>
+</div>
+<button type="submit" onclick="updateClick()" class="btn btn-outline-primary"> Update </button>
+<a class='btn btn-outline-primary' href='/Project/Index'>Go Back</a>
+<script>
+    var url = window.location.pathname;
+    var id = url.substring(url.lastIndexOf('/') + 1);
+
+    const ownerId = document.getElementById("selectOwner");
+    const title = document.getElementById("title");
+    const key = document.getElementById("key");
+    const defaultSelectionValue = document.getElementById("defaultValue").value;
+
+    var existingKeys = [];
+
+    $(document).ready(function(){
+        getProjectDetails(id);
+        getAccounts();
+        addExistingKeys();
+    })
+
+    function addExistingKeys() {
+        $.ajax({
+            url: '/api/ProjectApi',
+            type: 'GET',
+            dataType: 'json',
+            success: function (project) {
+                addKeysSuccess(project);
+            },
+            error: function () {
+                alert("error");
+            }
+        })
+    }
+
+    function addKeysSuccess(project) {
+        $.each(project, function (index, project) {
+            existingKeys.push(project.key);
+        })
+    }
+
+
+    var updatedProject = {
+        owner_id:0,
+        key: "",
+        title: "",
+    }
+    function getProjectDetails(id) {
+        $.ajax({
+            url: "/api/ProjectApi/" + id,
+            type: "Get",
+            datatype: "json",
+            success: function (project) {
+                updateProjectData(project);
+            },
+            error: function () {
+                alert("error");
+            }
+        });
+    }
+
+
+    function getAccounts() {
+        $.ajax({
+            url: "/api/AccountApi/",
+            type: "Get",
+            datatype: "json",
+            success: function (account) {
+                addAccountToList(account);
+            },
+            error: function () {
+                alert("error");
+            }
+        })
+    }
+    function addAccountToList(account) {
+        $.each(account, function (index, account) {
+            addDropDownOptions(account);
+        })
+        function createBoard() {
+            updatedProject = new Object();
+        }
+    }
+
+    function addDropDownOptions(account) {
+        $('#selectOwner').append(
+            "<option value='" + account.account_id + "'>" +
+            account.first_name + "</option>"
+        );
+    }
+    function updateProject(updatedProject) {
+        $.ajax({
+            url: "/api/ProjectApi/" + id,
+            type: "Put",
+            data: JSON.stringify(updatedProject),
+            contentType: "application/json; charset=utf-8",
+            success: function () {
+                alert("The project was updated.");
+            },
+            error: function () {
+                alert("error");
+            }
+        });
+    }
+
+    function updateProjectData(project) {
+        $("#title").val(project.title);
+        $("#key").val(project.key);
+        $("#selectOwner").val(project.owner_id);
+    }
+
+    function updateClick() {
+        updatedProject = new Object();
+        updatedProject.key = $('#key').val();
+        updatedProject.title = $('#title').val();
+        updatedProject.owner_id = ownerId.value;
+
+        if (validation(updatedProject) == true) {
+            updateProject(updatedProject);
+        }
+    }
+
+    function validation(project) {
+        if (project.title == "") {
+            name.setCustomValidity("This field is required");
+            name.reportValidity();
+            return false;
+        }
+        if (project.key == "") {
+            name.setCustomValidity("This field is required");
+            name.reportValidity();
+            return false;
+        }
+        if (project.owner_id == -1) {
+            ownerId.setCustomValidity("This field is required");
+            ownerId.reportValidity();
+            return false;
+        }
+        if (project.owner_id == defaultSelectionValue) {
+            ownerId.setCustomValidity("This field is required");
+            ownerId.reportValidity();
+            return false;
+        }
+        if (existingKeys.includes(project.key)) {
+            key.setCustomValidity("This key has been used");
+            key.reportValidity();
+            return false;
+        }
+        return true;
+    }
+
+</script>
