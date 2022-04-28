@@ -75,15 +75,12 @@ namespace TaskManagementSystem.Models
 #nullable enable
         public Account? assigedTo { get; set; }
         [ForeignKey("assignedTo")]
-     //   [JsonConverter(typeof(IntToStringConverter))]
         public int? assigned_to { get; set; }
 
         [Required]
         [Column(TypeName = "VARCHAR(50)")]
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public Priorities priority { get; set; } = Priorities.Low;
-
-      //  [JsonConverter(typeof(IntToStringConverter))]
         public int? story_points { get; set; }
 
         public DateTime created_at { get; set; }

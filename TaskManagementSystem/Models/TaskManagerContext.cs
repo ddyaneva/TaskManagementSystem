@@ -17,7 +17,7 @@ namespace TaskManagementSystem.Models
         
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
-            options.UseSqlite("DataSource=F:\\OSI\\1\\TaskManagementSystem\\TaskManagementSystem\\bin\\Debug\\netcoreapp3.1\\taskmanagercontext.db");
+            options.UseSqlite("path");
             
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)

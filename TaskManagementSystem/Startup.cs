@@ -45,7 +45,7 @@ namespace TaskManagementSystem
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            var connection = new SqliteConnection("DataSource=F:\\OSI\\1\\TaskManagementSystem\\TaskManagementSystem\\bin\\Debug\\netcoreapp3.1\\taskmanagercontext.db");
+            var connection = new SqliteConnection("path");
             connection.Open();
            
 

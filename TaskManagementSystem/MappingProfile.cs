@@ -21,7 +21,9 @@ namespace TaskManagementSystem
 
             CreateMap<TaskManagementSystem.Models.Task, TaskDto>();
             CreateMap<TaskDto, TaskManagementSystem.Models.Task>()
-                .ForMember(x => x.task_id,opt => opt.Ignore());
+                .ForMember(x => x.task_id, opt => opt.Ignore())
+                .ForMember(x => x.assigned_to, opt => opt.Ignore())
+                .ForMember(x => x.story_points, opt => opt.Ignore());
 
             CreateMap<Project, ProjectDto>();
             CreateMap<ProjectDto, Project>().ForMember(x => x.project_id,

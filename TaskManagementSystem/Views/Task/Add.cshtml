@@ -97,7 +97,7 @@
     <input type="number" id="storyPoints" name="storyPoints">
 </div>
 
-<button type="submit" onclick="updateClick()" class="btn btn-outline-primary"> Update </button>
+<button type="submit" onclick="updateClick()" class="btn btn-outline-primary"> Add </button>
 <a class='btn btn-outline-primary' href='/Task/Index'>Go Back</a>
 
 <script>
@@ -106,7 +106,6 @@
         getProjects();
         getBoards();
         fillAccountField();
-        getTaskData(id);
     })
     function checkIfDisabled() {
         if ($("#selectBoard")[0].value == -1 || document.getElementById("selectReportedBy").hasChildNodes() == false) {
@@ -189,6 +188,16 @@
     }
 
     function fillAccounts(accounts) {
+        $('#selectReportedBy').append(
+            "<option value='" + -1 + "'>" +
+            "Reported By" + "</option>"
+        );
+
+        $('#selectAssignedTo').append(
+            "<option value='" + -1 + "'>" +
+            "Assigned To" + "</option>"
+        );
+
         $.each(accounts, function (index, accounts) {
             addDropAccountOptions(accounts);
         })
@@ -224,8 +233,8 @@
             board_id: -1,
             description: 0,
             reported_by: 0,
-            assigned_to: null,
-            story_points: null,
+            assigned_to: -1,
+            story_points: -1,
             type: 0,
             status: 0,
             priority: 0
@@ -243,16 +252,16 @@
         newTask.description = $('#description').val();
         newTask.reported_by = $('#selectReportedBy')[0].value;
 
-        newTask.assigned_to = null//$('#selectAssignedTo')[0].value;
-  //      if (newTask.assigned_to == -1)
- //           newTask.assigned_to = null;
+        if ($('#selectAssignedTo')[0].value!=null)
+        newTask.assigned_to = $('#selectAssignedTo')[0].value;
 
         newTask.priority = $('#selectPriority')[0].value;
         if (newTask.priority == -1)
             newTask.priority = 0;
 
-        newTask.story_points = null // $('#storyPoints')[0].value;
-
+        if ($('#storyPoints')[0].value!="")
+        newTask.story_points = $('#storyPoints')[0].value;
+        
         if (validationTask(newTask)==true)
             addTask(newTask);
   
@@ -312,6 +321,6 @@
         $('#selectReportedBy')[0].value = -1;
         $('#selectAssignedTo')[0].value = -1;
         $('#selectPriority')[0].value = -1;
-        $('#storyPoints')[0].value = 0;
+        $('#storyPoints')[0].value = -1;
     }
 </script>

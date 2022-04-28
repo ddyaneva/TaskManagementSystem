@@ -64,23 +64,24 @@
         getTasks();
         getAccounts();
     })
+
     searchModel = {
-        title : "",
-        type : "",
-        assined_to : ""
+        title : null,
+        type : null,
+        assined_to : null
     }
+
     function search() {
         clearTable();
          searchModel.title = $("#title-search").val();
 
-        if ($('#selectType-search')[0].value>=0)
+        if ($('#selectType-search')[0].value!=-1)
             searchModel.type = $('#selectType-search')[0].value;
 
-        if ($('#addAssignedTo-search')[0].value >= 0)
+        if ($('#addAssignedTo-search')[0].value !=-1)
             searchModel.assigned_to = $('#addAssignedTo-search')[0].value;
-        else searchModel.assigned_to = "";
 
-           searchTask(searchModel);
+        searchTask(searchModel);
     }
 
     function searchTask(searchModel) {
@@ -95,9 +96,9 @@
                 $('#selectType-search')[0].value = -1;
                 $("#title-search").val("");
                 $('#addAssignedTo-search')[0].value = -1;
-                searchModel.assigned_to = "";
-                searchModel.type = "";
-                searchModel.title = "";
+                assigned_to = "";
+                type = "";
+                title ="";
 
             },
             error: function () {
@@ -136,13 +137,9 @@
     }
 
     function addDropProjectsOptions(accounts) {
-        $('#selectAssignedTo').append(
-            "<option value='" + accounts.accounts_id + "'>" +
-            accounts.first_name + " " + accounts.last_name + "</option>"
-        );
         $('#addAssignedTo-search').append(
-            "<option value='" + accounts.accounts_id + "'>" +
-            accounts.first_name + " " + accounts.last_name + "</option>"
+            "<option value='" + accounts.account_id + "'>" 
+             +accounts.first_name + " " + accounts.last_name + "</option>"
         );
     }
 

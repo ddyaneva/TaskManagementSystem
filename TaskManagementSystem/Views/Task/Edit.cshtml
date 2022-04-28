@@ -98,7 +98,7 @@
     <input type="number" id="storyPoints" name="storyPoints">
 </div>
 
-<button type="submit" onclick="updateClick()" class="btn btn-outline-primary"> Add </button>
+<button type="submit" onclick="updateClick()" class="btn btn-outline-primary"> Update </button>
 <a class='btn btn-outline-primary' href='/Task/Index'>Go Back</a>
 
 <script>
@@ -263,25 +263,36 @@
 
         newTask.title = $("#title").val();
         newTask.project_id = $('#selectProject')[0].value;
-        newTask.board_id = $('#selectBoard')[0].value;
+
+        if ($('#selectBoard')[0].value!=null)
+            newTask.board_id = $('#selectBoard')[0].value;
+
+        if ($('#selectType')[0].value != null)
         newTask.type = $('#selectType')[0].value;
 
-        newTask.status = $('#selectStatus')[0].value;
+        if ($('#selectStatus')[0].value != null)
+            newTask.status = $('#selectStatus')[0].value;
+
         if (newTask.status == -1)
             newTask.status = 0;
 
+        
         newTask.description = $('#description').val();
         newTask.reported_by = $('#selectReportedBy')[0].value;
 
-        newTask.assigned_to = null//$('#selectAssignedTo')[0].value;
-  //      if (newTask.assigned_to == -1)
- //           newTask.assigned_to = null;
+
+        if ($('#selectAssignedTo')[0].value != null)
+            newTask.assigned_to = $('#selectAssignedTo')[0].value;
+
+       if (newTask.assigned_to == -1)
+            newTask.assigned_to = -1;
 
         newTask.priority = $('#selectPriority')[0].value;
         if (newTask.priority == -1)
             newTask.priority = 0;
 
-        newTask.story_points = null // $('#storyPoints')[0].value;
+        if ($('#storyPoints')[0].value>0)
+        newTask.story_points = $('#storyPoints')[0].value;
 
         if (validationTask(newTask)==true)
             addTask(newTask);

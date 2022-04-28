@@ -41,12 +41,14 @@ namespace TaskManagementSystem.Models
         [JsonConverter(typeof(IntToStringConverter))]
         public int reported_by { get; set; }
 
-        public int? assigned_to { get; set; }
+        [JsonConverter(typeof(IntToStringConverter))]
+        public int assigned_to { get; set; }
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public Priorities priority { get; set; } = Priorities.Low;
 
-        public int? story_points { get; set; }
+        [JsonConverter(typeof(IntToStringConverter))]
+        public int story_points { get; set; }
 
         public DateTime created_at { get; set; }
         public DateTime updated_at { get; set; }

@@ -31,7 +31,10 @@
             type: "GET",
             dataType: "json",
             success: function (project) {
-                addRowSuccess(project);   
+                $.when(addRowSuccess(project)).done(function () {
+                    updateTaskSize(project)
+                });
+                
             },
             error: function() {
                 alert("error");
@@ -39,14 +42,19 @@
         })
     }
 
-    function getTaskSize(projects) {
+    function updateTaskSize(project) {
+        $.each(project, function (index, project) {
+            getTaskSize(project.project_id);
+        })
+    }
+
+    function getTaskSize(id) {
         $.ajax({
-            url: "/api/TaskApi/project/tasks/" + projects.project_id,
+            url: "/api/TaskApi/project/tasks/" + id,
             type: "GET",
             dataType: "json",
-            success: function (projects) {
-                var projectId = projects.project_id;
-                updateTaskSize(projects, projectId);
+            success: function (tasks) {
+                updateTaskSizeSuccess(tasks);
             },
             error: function () {
             }
@@ -75,7 +83,7 @@
             createRow(project);
         })
     }
-
+   
     function createRow(project) {
 
         $("#project").append(
@@ -84,7 +92,7 @@
             "<td>" + project.key + "</td>" +
             "<td>" + project.title + "</td>" +
             "<td>" + project.owner_id + "</td>" +
-            "<td><p id='task-" + project.project_id + "'>" + updateTaskData(project) + "</p> </td>" +
+            "<td><p id='task-" + project.project_id + "'>" + 0+ "</p> </td>" +
              "<td><a href='/project/edit/" + project.project_id + "'> Edit </a> </td>" +
             "<td>" +
              "<button type='button' class='btn btn-outline-danger' onclick='deleteProject(this);'" +
@@ -93,18 +101,14 @@
                  "</button>" +
                  "</td>" +
                  "<tr>"
-      )
+        )
+        
     }
 
-    function updateTaskData(projects){
-        getTaskSize(projects);
-    }
-
-    function updateTaskSize(project, projectId) {
-        var taskSize = Object.keys(project).length;
-        var id = "task-" + projectId;
-        var element = document.getElementById(id);
-        element.innerHTML = taskSize;
+    function updateTaskSizeSuccess(task) {
+        var taskSize = Object.keys(task).length;
+        if(task[0]!=null)
+        $("#task-" + task[0].project_id).text(taskSize);
     }
 
 </script>
